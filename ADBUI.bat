@@ -1,34 +1,19 @@
 @echo off
 set errtp=none
 set loop=0
+goto start
 echo %~dp0
-cd %~dp0logs
-	if errorlevel 1 (
-		echo Log directory doesn't exist, Creating...
-		mkdir "%~dp0logs"
-		if errorlevel 1 (
-		set errtp=Log Directory Creation
-		echo %errtp% error
-		timeout /t 1
-		cls
-        goto error
-    ) else (
-		echo Log directory created sucessfuly
-	)
-)
-cd %~dp0
-set "filetime=%DATE:~0,2%-%DATE:~3,2%-%DATE:~6,4%_%TIME:~0,2%-%TIME:~3,2%-%TIME:~6,2%"
-set "log=%~dp0logs\%filetime%.log"
 goto start
 
 :start
 cls
 set cc=0
+call :logc
 call :log Set @echo to off.
 timeout /t 1 >nul
 cls
+call prepare
 call :welcome
-goto prepare
 
 :welcome
 call :log Welcome
@@ -232,12 +217,6 @@ ping -n 1 localhost >nul
 ping -n 1 localhost >nul
 goto :eof
 
-:options
-cls
-call :log Coming Soon...
-timeout /t 1 >nul
-goto :eof
-
 :info
 cls
 ping -n 1 localhost >nul
@@ -310,3 +289,69 @@ cd "%root%"
 goto :eof
 
 
+:option
+cls
+echo.
+echo ====================
+echo === Options Menu ===
+echo ====================
+echo.
+echo 1. Quickstart
+echo 2. Verbose
+echo 3. Logging
+echo 4. Save
+echo 5. Cancel
+echo.
+set /p optsel=Choose an option: 
+
+if "%optsel%"=="1" (
+    set qckstr=true
+    goto :options
+)
+if "%optsel%"=="2" (
+    set option2=
+    goto :options
+)
+if "%optsel%"=="3" (
+    call :save_options
+    echo Options saved!
+    timeout /t 1 >nul
+    goto :eof
+)
+if "%optsel%"=="4" (
+    echo Cancelling changes.
+    timeout /t 1 >nul
+    goto :eof
+)
+goto :options
+
+:save_options
+
+(
+    echo {
+    echo     "option1": "%option1%",
+    echo     "option2": "%option2%"
+    echo }
+) > "%~dp0options.json"
+
+echo Options saved to options.json
+goto :eof
+
+:logc
+cd %~dp0logs
+	if errorlevel 1 (
+		echo Log directory doesn't exist, Creating...
+		mkdir "%~dp0logs"
+		if errorlevel 1 (
+		set errtp=Log Directory Creation
+		echo %errtp% error
+		timeout /t 1
+		cls
+        goto error
+    ) else (
+		echo Log directory created sucessfuly
+	)
+)
+cd %~dp0
+set "filetime=%DATE:~0,2%-%DATE:~3,2%-%DATE:~6,4%_%TIME:~0,2%-%TIME:~3,2%-%TIME:~6,2%"
+set "log=%~dp0logs\%filetime%.log"
